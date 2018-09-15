@@ -28,13 +28,10 @@ function makeKeyboard(parent) {
 
 function keyboardShortcuts(ev) {
     if( keyboardMap[ev.key]) {
-        keyboardMap[ev.key]();
+        keyboardMap[ev.key](ev);
         return;
     }
     switch( ev.key) {
-        case 'z':
-            bonkButton();
-            break;
         default:
             break;
     }
@@ -61,7 +58,13 @@ const makeButton = (key, note) => {
         const synth = new Tone.Synth().toMaster();
         synth.triggerAttackRelease(note, '8n');
     }
-    registerKeyboardShortcut(element.onclick, key);
+    registerKeyboardShortcut((ev)=>{
+        if( ev.repeat) {
+            return;
+        }
+        // TODO do an animation here
+        element.onclick();
+    }, key);
 
     return element;
 }
