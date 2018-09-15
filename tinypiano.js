@@ -3,10 +3,10 @@
 window.onload = () => {
     const body = document.body;   
     body.onkeypress = keyboardShortcuts;
-    makeKeyboard(body);
+    makeKeyboard(body, keyboardTrigger);
 }
 
-function makeKeyboard(parent) {
+function makeKeyboard(parent, trigger) {
     [
         ['z', 'C4'],
         ['s', 'C#4'],
@@ -22,7 +22,7 @@ function makeKeyboard(parent) {
         ['m', 'B4'],
         [',', 'C5'],
     ].forEach(k => {
-        parent.appendChild(makeButton(k[0], k[1]));
+        parent.appendChild(makeKeyboardKey(k[0], k[1], trigger));
     });
 }
 
@@ -43,29 +43,31 @@ function registerKeyboardShortcut(callback, key) {
     keyboardMap[key] = callback;
 }
 
-const makeButton = (key, note) => {
-    
+const makeKeyboardKey = (key, note, trigger) => {
     const element = document.createElement('button');
     element.classList.add('key');
-    if( note.includes('#')) {
-        element.classList.add('blackKey');
-    } else {
-        element.classList.add('whiteKey');
-    }
-    element.innerHTML = `${key} - ${note}`;
+    const keyColor = note.includes('#') ? 'blackKey' : 'whiteKey';
+    element.classList.add(keyColor);
+    element.innerHTML = `${note}<br><br>(${key})`;
     element.onclick = () => {
-        // TODO don't just make these constantly
-        const synth = new Tone.Synth().toMaster();
-        synth.triggerAttackRelease(note, '8n');
+        trigger(note);
     }
     registerKeyboardShortcut((ev)=>{
         if( ev.repeat) {
             return;
         }
         element.classList.add('keyPress');
-        element.addEventListener('animationend', ()=>{ element.classList.remove('keyPress') },{once:true});
-        element.onclick();
+        element.addEventListener('animationend', ()=>{
+            element.classList.remove('keyPress') 
+        }, {once:true});
+        trigger(note);
     }, key);
-
     return element;
+}
+
+
+const synth = new Tone.Synth().toMaster();
+
+function keyboardTrigger(note) {
+    synth.triggerAttackRelease(note, '8n');
 }
