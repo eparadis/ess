@@ -1,0 +1,9 @@
+.key {
+    height: 100px;
+    width: calc( 100vw / 14);
+}
+
+.blackKey {
+    background-color: darkgray;
+    color: white;
+}
