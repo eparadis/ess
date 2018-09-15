@@ -3,24 +3,26 @@
 window.onload = () => {
     const body = document.body;   
     body.onkeypress = keyboardShortcuts;
-    makeKeyboard(body, keyboardTrigger);
+    makeKeyboard(body, keyboardTrigger, 3);
 }
 
-function makeKeyboard(parent, trigger) {
+function makeKeyboard(parent, trigger, octave) {
+    // TODO change note param to makeKeyboardKey take a function for dynamic octave change
+    const oct = (note) => `${note}${octave}`;
     [
-        ['z', 'C4'],
-        ['s', 'C#4'],
-        ['x', 'D4'],
-        ['d', 'D#4'],
-        ['c', 'E4'],
-        ['v', 'F4'],
-        ['g', 'F#4'],
-        ['b', 'G4'],
-        ['h', 'G#4'],
-        ['n', 'A4'],
-        ['j', 'A#4'],
-        ['m', 'B4'],
-        [',', 'C5'],
+        ['z', oct('C')],
+        ['s', oct('C#')],
+        ['x', oct('D')],
+        ['d', oct('D#')],
+        ['c', oct('E')],
+        ['v', oct('F')],
+        ['g', oct('F#')],
+        ['b', oct('G')],
+        ['h', oct('G#')],
+        ['n', oct('A')],
+        ['j', oct('A#')],
+        ['m', oct('B')],
+        [',', `C${octave+1}`], // this is what i was trying to avoid :(
     ].forEach(k => {
         parent.appendChild(makeKeyboardKey(k[0], k[1], trigger));
     });
@@ -66,7 +68,7 @@ const makeKeyboardKey = (key, note, trigger) => {
 }
 
 
-const synth = new Tone.Synth().toMaster();
+const synth = new Tone.PolySynth().toMaster();
 
 function keyboardTrigger(note) {
     synth.triggerAttackRelease(note, '8n');
