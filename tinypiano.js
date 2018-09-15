@@ -3,7 +3,12 @@
 window.onload = () => {
     const body = document.body;   
     body.onkeypress = keyboardShortcuts;
-    makeKeyboard(body, keyboardTrigger, 3);
+    const kbd = document.createElement('div');
+    body.appendChild(kbd);
+    makeKeyboard(kbd, keyboardTrigger, 3);
+    const ctrls = document.createElement('div');
+    body.appendChild(ctrls);
+    makeSlider(ctrls);
 }
 
 function makeKeyboard(parent, trigger, octave) {
@@ -68,8 +73,24 @@ const makeKeyboardKey = (key, note, trigger) => {
 }
 
 
-const synth = new Tone.PolySynth().toMaster();
+const synth = new Tone.PolySynth(8, Tone.Synth).toMaster();
 
 function keyboardTrigger(note) {
     synth.triggerAttackRelease(note, '8n');
+}
+
+function makeSlider(parent) {
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.innerHTML = 'release';
+    slider.min = 0.1;
+    slider.max = 3;
+    slider.step = 'any';
+    slider.value = synth.get('envelope.release').envelope.release;
+    synth.set({envelope:{releaseCurve: 'linear'}});
+    console.log(synth.get());
+    parent.appendChild(slider);
+    slider.onchange = (ev)=>{
+        synth.set({envelope:{release: parseFloat(slider.value) }});
+    };
 }
