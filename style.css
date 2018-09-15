@@ -7,3 +7,12 @@
     background-color: darkgray;
     color: white;
 }
+
+.keyPress {
+    animation: 250ms ease-out 0s normal none slidein;
+}
+
+@keyframes slidein {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}

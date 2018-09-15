@@ -46,11 +46,11 @@ function registerKeyboardShortcut(callback, key) {
 const makeButton = (key, note) => {
     
     const element = document.createElement('button');
-    element.className = ['key'];
+    element.classList.add('key');
     if( note.includes('#')) {
-        element.className += ' blackKey';
+        element.classList.add('blackKey');
     } else {
-        element.className += ' whiteKey';
+        element.classList.add('whiteKey');
     }
     element.innerHTML = `${key} - ${note}`;
     element.onclick = () => {
@@ -62,7 +62,8 @@ const makeButton = (key, note) => {
         if( ev.repeat) {
             return;
         }
-        // TODO do an animation here
+        element.classList.add('keyPress');
+        element.addEventListener('animationend', ()=>{ element.classList.remove('keyPress') },{once:true});
         element.onclick();
     }, key);
 
