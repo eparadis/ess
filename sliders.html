@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <!-- https://jsfiddle.net/q6je0f39/ -->
+    <meta charset="UTF-8">
+<script>
+window.onload = () => {
+    const eq = document.querySelector('#eq');
+    ['100', '200', '500', '1k', '2k', '5k', '10k',].forEach(band=>{
+        makeSliderChannel(eq, band);
+    });
+
+    function makeSliderChannel( parent, band) {
+        const slider = document.createElement('input');
+        slider.setAttribute('type', 'range');
+        slider.setAttribute('step', 'any');
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('slider-wrapper');
+        wrapper.appendChild(slider);
+        const label = document.createElement('p');
+        label.innerText = `${band}`;
+        wrapper.appendChild(label);
+        parent.appendChild(wrapper);
+    }
+}
+</script>
+<style>
+.slider-wrapper {
+  display: inline-block;
+  width: 20px;
+  height: 150px;
+  padding: 0;
+}
+.slider-wrapper input {
+  width: 150px;
+  height: 20px;
+  margin: 0;
+  transform-origin: 75px 75px;
+  transform: rotate(-90deg);
+}
+.slider-wrapper p {
+  transform: translateY(110px) rotate(90deg);
+}
+</style>
+</head>
+<body>
+    <div id='eq'>
+    </div>
+</body>
+</html>
+
+
