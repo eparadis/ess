@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <style>
+        </style>
+        <script>
+            window.onload = () => {
+
+                const volumeControl = document.querySelector("#volumeControl");
+                volumeControl.addEventListener("input", changeVolume, false);
+                const filterControl = document.querySelector("#filterControl");
+                filterControl.addEventListener("input", changeFilter, false);
+                const filterQ = document.querySelector("#filterQ");
+                filterQ.addEventListener("input", changeFilter, false);
+
+                const freqLabel = document.querySelector("#freqLabel");
+                const qLabel = document.querySelector("#qLabel");
+
+                // create web audio api context
+                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+                // create Oscillator node
+                // var oscillator = audioCtx.createOscillator();
+                var gainNode = audioCtx.createGain();
+                const noise = createNoise(audioCtx);
+                const filterNode = createFilter(audioCtx);
+
+                // oscillator.type = 'square';
+                // oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // value in hertz
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                volumeControl.value = 0;
+                filterControl.value = 0;
+                filterQ.value = 3;
+
+                //oscillator.connect(gainNode);
+                noise.connect(filterNode);
+                filterNode.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                // oscillator.start();
+
+                function changeVolume(event) {
+                    // gainNode.offset.value = volumeControl.value;
+                    // see https://www.dr-lex.be/info-stuff/volumecontrols.html
+                    const x = volumeControl.value;
+                    gainNode.gain.setValueAtTime(
+                        Math.pow(x, 4),
+                        audioCtx.currentTime);
+                }
+
+                function changeFilter(event) {
+                    filterNode.frequency.setValueAtTime(
+                        filterControl.value,
+                        audioCtx.currentTime,
+                    );
+                    filterNode.Q.setValueAtTime(
+                        filterQ.value,
+                        audioCtx.currentTime,
+                    );
+                    freqLabel.innerHTML = filterControl.value;
+                    qLabel.innerHTML = filterQ.value;
+                }
+
+                function createNoise(audioContext) {
+                    const bufferSize = 2 * audioContext.sampleRate;
+                    const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (var i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1; // white noise
+                    }
+
+                    var noise = audioContext.createBufferSource();
+                    noise.buffer = noiseBuffer;
+                    noise.loop = true;
+                    noise.start(0);
+
+                    //noise.connect(audioContext.destination);
+                    return noise;
+                }
+
+                function createFilter( audioContext) {
+                    const filter = audioContext.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(0, audioCtx.currentTime);
+                    filter.Q = 3.0; // approx 12db/oct ?
+                    return filter;
+                }
+            };
+            
+        </script>
+    </head>
+    <body>
+        <p>filtered noise</p>
+        <p>Volume</p>
+        <input type='range' min='0' max='1' step='any' id="volumeControl">
+        <p>Filter Frequency</p>
+        <p id="freqLabel">0</p>
+        <input type='range' min='0' max='10000' step='1' id="filterControl">
+        <p>Filter Q</p>
+        <p id="qLabel">0</p>
+        <input type='range' min='1' max='60' step='0.1' id="filterQ">
+    </body>
+</html>
