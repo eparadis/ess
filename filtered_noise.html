@@ -16,32 +16,24 @@
                 const freqLabel = document.querySelector("#freqLabel");
                 const qLabel = document.querySelector("#qLabel");
 
-                // create web audio api context
-                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-                // create Oscillator node
-                // var oscillator = audioCtx.createOscillator();
-                var gainNode = audioCtx.createGain();
+                const gainNode = audioCtx.createGain();
                 const noise = createNoise(audioCtx);
                 const filterNode = createFilter(audioCtx);
 
-                // oscillator.type = 'square';
-                // oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // value in hertz
                 gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
                 volumeControl.value = 0;
                 filterControl.value = 0;
                 filterQ.value = 3;
 
-                //oscillator.connect(gainNode);
                 noise.connect(filterNode);
                 filterNode.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-                // oscillator.start();
 
                 function changeVolume(event) {
-                    // gainNode.offset.value = volumeControl.value;
                     // see https://www.dr-lex.be/info-stuff/volumecontrols.html
-                    const x = volumeControl.value;
+                    const x = event.target.value; //volumeControl.value;
                     gainNode.gain.setValueAtTime(
                         Math.pow(x, 4),
                         audioCtx.currentTime);
@@ -61,19 +53,18 @@
                 }
 
                 function createNoise(audioContext) {
-                    const bufferSize = 2 * audioContext.sampleRate;
+                    // ref: https://noisehack.com/generate-noise-web-audio-api/
+                    const bufferSize = 4 * audioContext.sampleRate; // 4s is long enough to not hear the repeat
                     const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
                     const output = noiseBuffer.getChannelData(0);
-                    for (var i = 0; i < bufferSize; i++) {
+                    for (let i = 0; i < bufferSize; i++) {
                         output[i] = Math.random() * 2 - 1; // white noise
                     }
 
-                    var noise = audioContext.createBufferSource();
+                    const noise = audioContext.createBufferSource();
                     noise.buffer = noiseBuffer;
                     noise.loop = true;
                     noise.start(0);
-
-                    //noise.connect(audioContext.destination);
                     return noise;
                 }
 
