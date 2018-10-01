@@ -15,28 +15,40 @@
 
                 const freqLabel = document.querySelector("#freqLabel");
                 const qLabel = document.querySelector("#qLabel");
+                const volumeLabel = document.querySelector("#volumeLabel");
 
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
                 const gainNode = audioCtx.createGain();
                 const noise = createNoise(audioCtx);
                 const filterNode = createFilter(audioCtx);
+                const vca = audioCtx.createGain(audioCtx);
 
-                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                //gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
                 volumeControl.value = 0;
-                filterControl.value = 0;
+                filterControl.value = 300;
                 filterQ.value = 3;
+                changeVolume({});
+                changeFilter({});
 
                 noise.connect(filterNode);
-                filterNode.connect(gainNode);
+                filterNode.connect(vca);
+                vca.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
+
+                const lfo = audioCtx.createOscillator();
+                lfo.type = 'triangle';
+                lfo.frequency.value = 0.05;
+                lfo.connect(vca.gain);
+                lfo.start();
 
                 function changeVolume(event) {
                     // see https://www.dr-lex.be/info-stuff/volumecontrols.html
-                    const x = event.target.value; //volumeControl.value;
+                    const x = volumeControl.value; // event.target.value;
                     gainNode.gain.setValueAtTime(
                         Math.pow(x, 4),
                         audioCtx.currentTime);
+                    volumeLabel.innerHTML = Number.parseFloat(x).toFixed(2);
                 }
 
                 function changeFilter(event) {
@@ -71,7 +83,7 @@
                 function createFilter( audioContext) {
                     const filter = audioContext.createBiquadFilter();
                     filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(0, audioCtx.currentTime);
+                    filter.frequency.setValueAtTime(300, audioCtx.currentTime);
                     filter.Q = 3.0; // approx 12db/oct ?
                     return filter;
                 }
@@ -81,7 +93,8 @@
     </head>
     <body>
         <p>filtered noise</p>
-        <p>Volume</p>
+        <p>Master Volume</p>
+        <p id="volumeLabel">0</p>
         <input type='range' min='0' max='1' step='any' id="volumeControl">
         <p>Filter Frequency</p>
         <p id="freqLabel">0</p>
