@@ -5,3 +5,4 @@ Ed's Simple Synth - Extra Silly Stuff - Example Source Show
 
 - A prototype of component for future synths: [Mouse or Keyboard Piano](./synthhelloworld.html)
 - How about a little EQ ui? [Parametric EQ UI](./sliders.html)
+- Here's some soothing ocean sounds: [Filtered Noise](./filtered_noise.html)
