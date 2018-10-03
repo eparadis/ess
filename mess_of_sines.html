@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <style>
+  </style>
+  <script>
+  window.onload = () => {
+    // inspired by https://github.com/sensorium/Mozzi/blob/master/examples/02.Control/Control_Oscil_Wash/Control_Oscil_Wash.ino
+
+    const ctx = new window.AudioContext();
+
+    const mixer = ctx.createGain();
+    mixer.gain.value = 0.2;
+    mixer.connect(ctx.destination);    
+
+    const spread = 4; // half notes 
+    for( let i = -3; i <= 3; i += 1) {
+        const frequency = 220 * Math.pow(2,i*spread/12);
+        console.log(frequency);
+        const vco = createVCO(ctx, frequency);
+        vco.connect(mixer);
+    }
+  }
+
+  const createVCO = (ctx, freq) => {
+    const vco = ctx.createOscillator();
+    vco.frequency.value = freq;
+    vco.type = 'sine';
+    vco.start();
+
+    const lfo = ctx.createOscillator();
+    const range = 500;
+    const frequency = freq / (Math.random() * range + (10000 + range / 2 ));
+    console.log(frequency);
+    lfo.frequency.value = frequency;
+    lfo.type = 'sine';
+    lfo.start();
+
+    const vca = ctx.createGain();
+    lfo.connect(vca.gain);
+    vco.connect(vca);
+
+    return vca;
+  };
+  </script>
+ </head>
+<body>
+</body>
+</html>
