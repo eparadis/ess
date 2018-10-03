@@ -5,12 +5,10 @@
   </style>
   <script>
   window.onload = () => {
-    // inspired by https://github.com/sensorium/Mozzi/blob/master/examples/02.Control/Control_Oscil_Wash/Control_Oscil_Wash.ino
-
     const ctx = new window.AudioContext();
 
     const mixer = ctx.createGain();
-    mixer.gain.value = 0.2;
+    mixer.gain.value = 0;
     mixer.connect(ctx.destination);    
 
     const spread = 4; // half notes 
@@ -19,6 +17,19 @@
         console.log(frequency);
         const vco = createVCO(ctx, frequency);
         vco.connect(mixer);
+    }
+
+    const volumeControl = document.querySelector('#volumeControl');
+    volumeControl.addEventListener('input', changeVolume, false);
+    changeVolume({target: { value: 0 }});
+    volumeControl.value = 0;
+    function changeVolume(event) {
+        // see https://www.dr-lex.be/info-stuff/volumecontrols.html
+        const x = event.target.value;
+        mixer.gain.setValueAtTime(
+            Math.pow(x, 4),
+            ctx.currentTime);
+        volumeLabel.innerHTML = Number.parseFloat(x).toFixed(2);
     }
   }
 
@@ -42,8 +53,14 @@
 
     return vca;
   };
+
   </script>
  </head>
 <body>
+  <p>detuned oscillators - chordal wash</p>
+  <p>inspired by <a href="https://github.com/sensorium/Mozzi/blob/master/examples/02.Control/Control_Oscil_Wash/Control_Oscil_Wash.ino">this example</a> from the Mozzi Arduino library</p>
+  <p>Master volume</p>
+  <p id="volumeLabel">0</p>
+  <input type="range" min="0" max="1" step="any" id="volumeControl">
 </body>
 </html>
