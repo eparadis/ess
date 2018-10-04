@@ -11,25 +11,21 @@
     mixer.gain.value = 0;
     mixer.connect(ctx.destination);    
 
+    const parent = document.querySelector('#container');
+    const volCtl = createParamSlider(parent, 'Master volume');
+    connectParamSlider(ctx, mixer.gain, x => Math.pow(x,4), volCtl );
+    const freqCtl = createParamSlider(parent, 'Frequency');
+
     const spread = 4; // half notes 
     for( let i = -3; i <= 3; i += 1) {
         const frequency = 220 * Math.pow(2,i*spread/12);
-        console.log(frequency);
-        const vco = createVCO(ctx, frequency);
-        vco.connect(mixer);
-    }
-
-    const volumeControl = document.querySelector('#volumeControl');
-    volumeControl.addEventListener('input', changeVolume, false);
-    changeVolume({target: { value: 0 }});
-    volumeControl.value = 0;
-    function changeVolume(event) {
-        // see https://www.dr-lex.be/info-stuff/volumecontrols.html
-        const x = event.target.value;
-        mixer.gain.setValueAtTime(
-            Math.pow(x, 4),
-            ctx.currentTime);
-        volumeLabel.innerHTML = Number.parseFloat(x).toFixed(2);
+        const { vco, vca } = createVCO(ctx, frequency);
+        vca.connect(mixer);
+        connectParamSlider(ctx, vco.frequency,
+            x => {
+                return (x*1000) * Math.pow(2,i*spread/12);
+            },
+            freqCtl );
     }
   }
 
@@ -42,7 +38,6 @@
     const lfo = ctx.createOscillator();
     const range = 500;
     const frequency = freq / (Math.random() * range + (10000 + range / 2 ));
-    console.log(frequency);
     lfo.frequency.value = frequency;
     lfo.type = 'sine';
     lfo.start();
@@ -51,16 +46,45 @@
     lfo.connect(vca.gain);
     vco.connect(vca);
 
-    return vca;
+    return { vca, vco };
   };
 
+  const createParamSlider = (parent, name) => {
+    const title = document.createElement('p');
+    title.innerHTML = name;
+    parent.appendChild(title);
+
+    const label = document.createElement('p');
+    parent.appendChild(label);
+
+    const slider = document.createElement('input');
+    slider.setAttribute('type', 'range');
+    slider.setAttribute('step', 'any');
+    slider.setAttribute('min', '0');
+    slider.setAttribute('max', '1');
+    parent.appendChild(slider);
+
+    return { slider, label };
+  };
+
+  const connectParamSlider = (ctx, audioParam, mapFn, paramCtl ) => {
+    const { slider, label } = paramCtl;
+    slider.addEventListener('input', changeValue, false);
+    slider.value = 0;
+    changeValue({target: { value: 0 }});
+    function changeValue(event) {
+        const x = slider.value;
+        audioParam.setValueAtTime(
+            mapFn(x),
+            ctx.currentTime);
+        label.innerHTML = Number.parseFloat(mapFn(x)).toFixed(2);
+    }
+  };
   </script>
  </head>
 <body>
   <p>detuned oscillators - chordal wash</p>
   <p>inspired by <a href="https://github.com/sensorium/Mozzi/blob/master/examples/02.Control/Control_Oscil_Wash/Control_Oscil_Wash.ino">this example</a> from the Mozzi Arduino library</p>
-  <p>Master volume</p>
-  <p id="volumeLabel">0</p>
-  <input type="range" min="0" max="1" step="any" id="volumeControl">
+  <div id="container"></div>
 </body>
 </html>
