@@ -6,7 +6,7 @@
   </style>
   <script>
   window.onload = () => {
-    const ctx = new window.AudioContext();
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
     const mixer = ctx.createGain();
     mixer.gain.value = 0;
